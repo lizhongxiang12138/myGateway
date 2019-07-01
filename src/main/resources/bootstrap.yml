@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: my-gateway
+
+  cloud:
+    config:
+      profile: ${SPRING_PROFILE}
+      label: ${SPRING_LABEL}
+      uri: ${lzx_CONFIG_URL}

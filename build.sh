@@ -1,0 +1,2 @@
+mvn -U clean package -Dmaven.test.skip=true -DskipTests=true -Dappname=dev-srd -DAPP_NAME=dev-srd -Ptesting
+echo "mvn -U clean package -Dmaven.test.skip=true -DskipTests=true -Dappname=dev-srd -DAPP_NAME=dev-srd -Ptesting"

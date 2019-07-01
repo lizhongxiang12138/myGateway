@@ -1,0 +1,64 @@
+# ------------------- Dashboard Deployment ------------------- #
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: my-gateway
+  name: my-gateway
+  namespace: default
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: my-gateway
+  template:
+    metadata:
+      labels:
+        k8s-app: my-gateway
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILE
+              value: dev
+            - name: SPRING_LABEL
+              value: k8s
+            - name: lzx_CONFIG_URL
+              value: http://service-config:30005
+          image: '172.26.206.220/library/my-gateway-ui:1.0.0_20190701'
+          imagePullPolicy: Always
+          name: my-gateway
+          ports:
+            - containerPort: 30006
+              protocol: TCP
+#        args:
+#          - --auto-generate-certificates
+          # Uncomment the following line to manually specify Kubernetes API server Host
+          # If not specified, Dashboard will attempt to auto discover the API server and connect
+          # to it. Uncomment only if the default does not work.
+          # - --apiserver-host=http://my-address:port
+#        volumeMounts:
+#        - name: kubernetes-dashboard-certs
+#          mountPath: /certs
+#          # Create on-disk volume to store exec logs
+#        - mountPath: /tmp
+#          name: tmp-volume
+#        livenessProbe:
+#          httpGet:
+#            scheme: HTTPS
+#            path: /
+#            port: 8443
+#          initialDelaySeconds: 30
+#          timeoutSeconds: 30
+#      volumes:
+#      - name: kubernetes-dashboard-certs
+#        secret:
+#          secretName: kubernetes-dashboard-certs
+#      - name: tmp-volume
+#        emptyDir: {}
+#      serviceAccountName: kubernetes-dashboard
+#      # Comment the following tolerations if Dashboard must not be deployed on master
+#      tolerations:
+#      - key: node-role.kubernetes.io/master
+#        effect: NoSchedule

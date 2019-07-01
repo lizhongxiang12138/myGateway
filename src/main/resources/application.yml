@@ -1,5 +1,15 @@
 server:
-  port: 30006
+  port: ${server-port}
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: ${register-with-eureka}     # 是否注册到eureka
+    service-url:
+      defaultZone: ${service-url-defaultZone}
+  instance:
+    prefer-ip-address: false
+    hostname: ${instance-hostname}
 
 
 spring:

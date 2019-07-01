@@ -1,0 +1,22 @@
+server:
+  port: 30006
+
+
+spring:
+  cloud:
+    gateway:
+      routes:
+
+      - id: baidu
+        uri: https://www.baidu.com
+        predicates:
+        - Path=/baidu/**
+        filters:
+        - StripPrefix=1
+
+      - id: eureka-manage
+        uri: lb://eureka-manage
+        predicates:
+        - Path=/eureka-manage/**
+        filters:
+        - StripPrefix=1

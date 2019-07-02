@@ -1,9 +1,13 @@
 spring:
   application:
     name: my-gateway
-
+################################################################################
+#   配置管理中心相关配
+#   这里的值配置在环境变量中
+#   如果项目没有使用统一的配置管理中心则不需要此段配置
+################################################################################
   cloud:
     config:
-      profile: ${SPRING_PROFILE}
+      profile: ${LZX_SPRING_PROFILE}
       label: ${SPRING_LABEL}
       uri: ${lzx_CONFIG_URL}

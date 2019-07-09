@@ -1,15 +1,15 @@
 package com.lzx.gateway.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzx.gateway.dto.ReturnData;
 import com.lzx.gateway.dto.UserDTO;
 import com.lzx.gateway.jwt.JwtModel;
+import com.lzx.gateway.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.subject.Subject;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 
 /**
  * 描述: 认证接口
@@ -22,24 +22,24 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private ObjectMapper objectMapper;
+
+    public AuthController(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     /**
      * 登陆认证接口
      * @param userDTO
      * @return
      */
     @PostMapping("/login")
-    public ReturnData<String> login(@RequestBody UserDTO userDTO){
-        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(userDTO.getUserName(), userDTO.getPassword());
-        Subject subject = SecurityUtils.getSubject();
-        try{
-            subject.login(usernamePasswordToken);
-        }catch (AuthenticationException e){
-            return new ReturnData<String>(HttpStatus.SC_UNAUTHORIZED,"认证失败",null);
-        }
-        JwtModel jwtModel = (JwtModel) subject.getPrincipal();
-        //TODO 获取jwt Token
-
-        return new ReturnData<String>(HttpStatus.SC_OK,"123456",null);
+    public ReturnData<String> login(@RequestBody UserDTO userDTO) throws Exception {
+        ArrayList<String> roleIdList = new ArrayList<>(1);
+        roleIdList.add("role_test_1");
+        JwtModel jwtModel = new JwtModel("test", roleIdList);
+        String jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), 1L * 24L * 60L * 60L * 1000L);
+        return new ReturnData<String>(HttpStatus.SC_OK,"认证成功",jwt);
     }
 
     /**

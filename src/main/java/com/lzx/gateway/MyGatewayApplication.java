@@ -1,4 +1,4 @@
-package com.lzx.gateway.demo;
+package com.lzx.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

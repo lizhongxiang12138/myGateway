@@ -3,6 +3,10 @@ package com.lzx.gateway.auth;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzx.gateway.dto.ReturnData;
+import com.lzx.gateway.jwt.JwtModel;
+import com.lzx.gateway.jwt.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +24,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 /**
  * 描述: JwtToken 过滤器
@@ -63,19 +69,57 @@ public class JwtTokenFilter implements GlobalFilter,Ordered {
         ServerHttpResponse resp = exchange.getResponse();
         if(StringUtils.isBlank(token)){
             //没有token
-            resp.setStatusCode(HttpStatus.UNAUTHORIZED);
-            resp.getHeaders().add("Content-Type","application/json;charset=UTF-8");
-            ReturnData<String> returnData = new ReturnData<>(org.apache.http.HttpStatus.SC_UNAUTHORIZED, "请登陆", "请登陆");
-            String returnStr = "";
+            return authErro(resp,"请登陆");
+        }else{
+            //有token
             try {
-                returnStr = objectMapper.writeValueAsString(returnData);
-            } catch (JsonProcessingException e) {
+                Claims claims = JwtUtil.parseJWT(token);
+                String subject = claims.getSubject();
+                JwtModel jwtModel = objectMapper.readValue(subject, JwtModel.class);
+                /*
+                    TODO 对jwt里面的用户信息做判断
+                    根据自己的业务编写
+                 */
+
+                /*
+                    获取token的过期时间，和当前时间作比较，如果小于当前时间，则token过期
+                 */
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                Date expiration = claims.getExpiration();
+                log.info("======== token的过期时间："+df.format(expiration));
+                return chain.filter(exchange);
+            }catch (ExpiredJwtException e){
                 log.error(e.getMessage(),e);
+                if(e.getMessage().contains("Allowed clock skew")){
+                    return authErro(resp,"认证过期");
+                }else{
+                    return authErro(resp,"认证失败");
+                }
+            }catch (Exception e) {
+                log.error(e.getMessage(),e);
+                return authErro(resp,"认证失败");
             }
-            DataBuffer buffer = resp.bufferFactory().wrap(returnStr.getBytes(StandardCharsets.UTF_8));
-            return resp.writeWith(Flux.just(buffer));
         }
-        return null;
+    }
+
+    /**
+     * 认证错误输出
+     * @param resp 响应对象
+     * @param mess 错误信息
+     * @return
+     */
+    private Mono<Void> authErro(ServerHttpResponse resp,String mess) {
+        resp.setStatusCode(HttpStatus.UNAUTHORIZED);
+        resp.getHeaders().add("Content-Type","application/json;charset=UTF-8");
+        ReturnData<String> returnData = new ReturnData<>(org.apache.http.HttpStatus.SC_UNAUTHORIZED, mess, mess);
+        String returnStr = "";
+        try {
+            returnStr = objectMapper.writeValueAsString(returnData);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(),e);
+        }
+        DataBuffer buffer = resp.bufferFactory().wrap(returnStr.getBytes(StandardCharsets.UTF_8));
+        return resp.writeWith(Flux.just(buffer));
     }
 
     @Override

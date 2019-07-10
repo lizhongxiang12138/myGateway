@@ -7,6 +7,7 @@ import com.lzx.gateway.jwt.JwtModel;
 import com.lzx.gateway.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ public class AuthController {
 
     private ObjectMapper objectMapper;
 
+    @Value("${org.my.jwt.effective-time}")
+    private String effectiveTime;
+
     public AuthController(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -38,7 +42,31 @@ public class AuthController {
         ArrayList<String> roleIdList = new ArrayList<>(1);
         roleIdList.add("role_test_1");
         JwtModel jwtModel = new JwtModel("test", roleIdList);
-        String jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), 1L * 24L * 60L * 60L * 1000L);
+        int effectivTimeInt = Integer.valueOf(effectiveTime.substring(0,effectiveTime.length()-1));
+        String effectivTimeUnit = effectiveTime.substring(effectiveTime.length()-1,effectiveTime.length());
+        String jwt = null;
+        switch (effectivTimeUnit){
+            case "s" :{
+                //秒
+                jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), effectivTimeInt * 1000L);
+                break;
+            }
+            case "m" :{
+                //分钟
+                jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), effectivTimeInt * 60L * 1000L);
+                break;
+            }
+            case "h" :{
+                //小时
+                jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), effectivTimeInt * 60L * 60L * 1000L);
+                break;
+            }
+            case "d" :{
+                //小时
+                jwt = JwtUtil.createJWT("test", "test", objectMapper.writeValueAsString(jwtModel), effectivTimeInt * 24L * 60L * 60L * 1000L);
+                break;
+            }
+        }
         return new ReturnData<String>(HttpStatus.SC_OK,"认证成功",jwt);
     }
 

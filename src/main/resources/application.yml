@@ -42,8 +42,21 @@ spring:
         filters:
         - StripPrefix=1
 
+      - id: sina
+        uri: https://www.sina.com.cn/
+        predicates:
+        - Path=/sina/**
+        filters:
+        - StripPrefix=1
+
 org:
   my:
     jwt:
+      #跳过认证的路由
       skip-auth-urls:
-      - /baidu/123
+      - /baidu
+      ############################################
+      #   有效时长
+      #     单位：d:天、h:小时、m:分钟、s:秒
+      ###########################################
+      effective-time: 1m

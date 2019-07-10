@@ -1,15 +1,18 @@
 package com.lzx.gateway.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lzx.gateway.annotation.JwtCheck;
 import com.lzx.gateway.dto.ReturnData;
 import com.lzx.gateway.dto.UserDTO;
 import com.lzx.gateway.jwt.JwtModel;
 import com.lzx.gateway.jwt.JwtUtil;
+import jdk.nashorn.internal.objects.annotations.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 
 /**
@@ -78,4 +81,15 @@ public class AuthController {
         return new ReturnData<String> (HttpStatus.SC_UNAUTHORIZED,"未认证,请重新登陆",null);
     }
 
+    /**
+     * jwt 检查注解测试 测试
+     * @return
+     */
+    @GetMapping("/testJwtCheck")
+    @JwtCheck
+    public ReturnData<String> testJwtCheck(@RequestHeader("Authorization")String token,@RequestParam("name")@Valid String name){
+
+        return new ReturnData<String>(HttpStatus.SC_OK,"请求成功咯","请求成功咯"+name);
+
+    }
 }

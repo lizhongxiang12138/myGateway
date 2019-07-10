@@ -1,14 +1,16 @@
 package com.lzx.gateway.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +21,7 @@ import java.util.Map;
  * @Auther: lzx
  * @Date: 2019/7/9 17:50
  */
+@Slf4j
 public class JwtUtil {
 
     public static final String KEY = "022bdc63c3c5a45879ee6581508b9d03adfec4a4658c0ab3d722e50c91a351c42c231cf43bb8f86998202bd301ec52239a74fc0c9a9aeccce604743367c9646b";
@@ -95,6 +98,29 @@ public class JwtUtil {
                 .setSigningKey(key)                 //设置签名的秘钥
                 .parseClaimsJws(jwt).getBody();     //设置需要解析的jwt
         return claims;
+    }
+
+    /**
+     * 检查token
+     * @return
+     */
+    public static boolean checkToken(String jwtToken, ObjectMapper objectMapper) throws Exception {
+        //TODO 根据自己的业务修改
+        Claims claims = JwtUtil.parseJWT(jwtToken);
+        String subject = claims.getSubject();
+        JwtModel jwtModel = objectMapper.readValue(subject, JwtModel.class);
+        /*
+            TODO 对jwt里面的用户信息做判断
+            根据自己的业务编写
+         */
+
+        /*
+            获取token的过期时间，和当前时间作比较，如果小于当前时间，则token过期
+         */
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        Date expiration = claims.getExpiration();
+        log.info("======== token的过期时间："+df.format(expiration));
+        return true;
     }
 
 }

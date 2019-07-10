@@ -3,9 +3,7 @@ package com.lzx.gateway.auth;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lzx.gateway.dto.ReturnData;
-import com.lzx.gateway.jwt.JwtModel;
 import com.lzx.gateway.jwt.JwtUtil;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,9 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * 描述: JwtToken 过滤器
@@ -35,6 +31,7 @@ import java.util.Date;
  * @Date: 2019/7/9 15:49
  */
 @Component
+//读取 yml 文件下的 org.my.jwt
 @ConfigurationProperties("org.my.jwt")
 @Setter
 @Getter
@@ -73,20 +70,7 @@ public class JwtTokenFilter implements GlobalFilter,Ordered {
         }else{
             //有token
             try {
-                Claims claims = JwtUtil.parseJWT(token);
-                String subject = claims.getSubject();
-                JwtModel jwtModel = objectMapper.readValue(subject, JwtModel.class);
-                /*
-                    TODO 对jwt里面的用户信息做判断
-                    根据自己的业务编写
-                 */
-
-                /*
-                    获取token的过期时间，和当前时间作比较，如果小于当前时间，则token过期
-                 */
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                Date expiration = claims.getExpiration();
-                log.info("======== token的过期时间："+df.format(expiration));
+                JwtUtil.checkToken(token,objectMapper);
                 return chain.filter(exchange);
             }catch (ExpiredJwtException e){
                 log.error(e.getMessage(),e);

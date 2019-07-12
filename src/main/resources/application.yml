@@ -25,6 +25,16 @@ spring:
 #   gateway相关配置
 #################################
     gateway:
+      ################################
+      # 配置允许跨域请求
+      ################################
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+            - GET
+            - POST
 #    路由定义
       routes:
 

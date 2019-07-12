@@ -26,7 +26,7 @@ spec:
               value: k8s
             - name: lzx_CONFIG_URL
               value: http://service-config:30005
-          image: '172.26.206.220/library/my-gateway-ui:1.0.0_20190701'
+          image: '172.26.206.220/library/my-gateway-ui:1.0.0_20190712_0001'
           imagePullPolicy: Always
           name: my-gateway
           ports:
